@@ -28,14 +28,29 @@ A Python script that downloads all videos in a YouTube playlist and converts the
 
 ## **Usage**
 
-1. Update the `playlist_url` and `download_folder` in the script, or you can directly pass them as input arguments.
-2. Run the script:
+You can run the script from the command line instead of editing the file.
+
+1. Install Python dependencies:
 
     ```bash
-    python yt_playlist_to_mp3.py
+    pip install -U yt-dlp
     ```
 
-3. The MP3 files will be saved in the specified folder.
+2. Make sure `ffmpeg` is installed and available in your PATH (see https://ffmpeg.org/).
+
+3. Run the script with the playlist URL and optional destination folder:
+
+    ```bash
+    python yt_playlist_mp3_downloader.py "https://youtube.com/playlist?list=YOUR_PLAYLIST_ID" -d "C:\Users\YourUser\Downloads\Music"
+    ```
+
+4. Use `-t` to customize the output filename template and `-v` to enable verbose logging.
+
+Example with template and verbose logging:
+
+```bash
+python yt_playlist_mp3_downloader.py "https://youtube.com/playlist?list=YOUR_PLAYLIST_ID" -d "./Music" -t "%(playlist_index)s - %(title)s.%(ext)s" -v
+```
 
 ## **Example**
 
