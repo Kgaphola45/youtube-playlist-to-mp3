@@ -73,15 +73,26 @@ def download_playlist_to_mp3(playlist_url, download_folder, output_template='%(p
 
     logging.info("Converting to format=%s @ bitrate=%s", audio_format, audio_bitrate)
 
-    cmd = yt_dlp_cmd + [
-        '-x', '--audio-format', audio_format,
-        '-o', os.path.join(download_folder, output_template),
-        playlist_url
-    ]
-
-    # Pass ffmpeg postprocessor args to control bitrate
-    if audio_bitrate:
-        cmd += ['--postprocessor-args', f'-b:a {audio_bitrate}']
+    if audio_format.lower() == 'webm':
+        # Prefer downloading native webm audio if available; do not use -x/--audio-format
+        format_selector = 'bestaudio[ext=webm]/bestaudio'
+        cmd = yt_dlp_cmd + [
+            '-f', format_selector,
+            '-o', os.path.join(download_folder, output_template),
+            playlist_url
+        ]
+        # If user requested a lower bitrate, ask ffmpeg to re-encode via postprocessor args
+        if audio_bitrate:
+            cmd += ['--postprocessor-args', f'-b:a {audio_bitrate}']
+    else:
+        # Use extract-audio flow for codec conversions supported by yt-dlp
+        cmd = yt_dlp_cmd + [
+            '-x', '--audio-format', audio_format,
+            '-o', os.path.join(download_folder, output_template),
+            playlist_url
+        ]
+        if audio_bitrate:
+            cmd += ['--postprocessor-args', f'-b:a {audio_bitrate}']
 
     logging.debug("Running command: %s", ' '.join(cmd))
     try:
