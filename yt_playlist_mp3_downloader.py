@@ -53,7 +53,7 @@ def _prompt_non_empty(prompt_text, default_value=None):
         print("Please enter a value.")
 
 
-def download_playlist_to_mp3(playlist_url, download_folder, output_template='%(playlist_index)s - %(title)s.%(ext)s'):
+def download_playlist_to_mp3(playlist_url, download_folder, output_template='%(playlist_index)s - %(title)s.%(ext)s', audio_format='webm', audio_bitrate='64k'):
     os.makedirs(download_folder, exist_ok=True)
 
     logging.info("Downloading playlist: %s", playlist_url)
@@ -67,11 +67,21 @@ def download_playlist_to_mp3(playlist_url, download_folder, output_template='%(p
     if not _check_executable('ffmpeg'):
         logging.warning("`ffmpeg` not found in PATH. Conversion may fail. Install ffmpeg from https://ffmpeg.org/")
 
+    # Normalize bitrate (allow user to pass '64' or '64k')
+    if isinstance(audio_bitrate, str) and audio_bitrate.isdigit():
+        audio_bitrate = f"{audio_bitrate}k"
+
+    logging.info("Converting to format=%s @ bitrate=%s", audio_format, audio_bitrate)
+
     cmd = yt_dlp_cmd + [
-        '-x', '--audio-format', 'mp3',
+        '-x', '--audio-format', audio_format,
         '-o', os.path.join(download_folder, output_template),
         playlist_url
     ]
+
+    # Pass ffmpeg postprocessor args to control bitrate
+    if audio_bitrate:
+        cmd += ['--postprocessor-args', f'-b:a {audio_bitrate}']
 
     logging.debug("Running command: %s", ' '.join(cmd))
     try:
@@ -89,6 +99,10 @@ def main():
     parser.add_argument('-t', '--template', dest='template', default='%(playlist_index)s - %(title)s.%(ext)s',
                         help='Output filename template for yt-dlp (default: "%(playlist_index)s - %(title)s.%(ext)s")')
     parser.add_argument('-v', '--verbose', action='store_true', help='Enable debug logging')
+    parser.add_argument('-a', '--audio-format', dest='audio_format', default='webm',
+                        help='Audio format to convert to (default: webm)')
+    parser.add_argument('-b', '--audio-bitrate', dest='audio_bitrate', default='64k',
+                        help='Target audio bitrate (e.g. 64k or 128k). Default: 64k')
 
     args = parser.parse_args()
 
@@ -101,7 +115,7 @@ def main():
     logging.basicConfig(level=logging.DEBUG if args.verbose else logging.INFO, format='%(levelname)s: %(message)s')
 
     try:
-        download_playlist_to_mp3(args.playlist_url, args.download_folder, args.template)
+        download_playlist_to_mp3(args.playlist_url, args.download_folder, args.template, args.audio_format, args.audio_bitrate)
     except Exception as exc:
         logging.error("Failed: %s", exc)
         sys.exit(1)

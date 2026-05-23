@@ -28,7 +28,7 @@ A Python script that downloads all videos in a YouTube playlist and converts the
 
 ## **Usage**
 
-You can run the script from the command line instead of editing the file.
+You can run the script from the command line instead of editing the file. By default the script now converts audio to `webm` at `64k` bitrate; use the CLI flags below to change format and bitrate.
 
 1. Install Python dependencies:
 
@@ -44,12 +44,24 @@ You can run the script from the command line instead of editing the file.
     python yt_playlist_mp3_downloader.py "https://youtube.com/playlist?list=YOUR_PLAYLIST_ID" -d "C:\Users\YourUser\Downloads\Music"
     ```
 
-4. Use `-t` to customize the output filename template and `-v` to enable verbose logging.
+4. Use `-t` to customize the output filename template and `-v` to enable verbose logging. Use `-a`/`--audio-format` to choose the audio format and `-b`/`--audio-bitrate` to set the target bitrate.
 
 Example with template and verbose logging:
 
 ```bash
 python yt_playlist_mp3_downloader.py "https://youtube.com/playlist?list=YOUR_PLAYLIST_ID" -d "./Music" -t "%(playlist_index)s - %(title)s.%(ext)s" -v
+```
+
+Convert to WebM at 64k (default):
+
+```bash
+python yt_playlist_mp3_downloader.py "https://youtube.com/playlist?list=YOUR_PLAYLIST_ID"
+```
+
+Convert to MP3 at 320k:
+
+```bash
+python yt_playlist_mp3_downloader.py "https://youtube.com/playlist?list=YOUR_PLAYLIST_ID" -a mp3 -b 320k
 ```
 
 ## **Example**
